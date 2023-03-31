@@ -1,3 +1,23 @@
+<div align="center">
+  <img height="72" src="https://cdn.discordapp.com/attachments/234057206784458754/1090664460588433539/icon.png">
+  <p>
+	<a href="https://discord.gg/muDnFVwhUq"><img src="https://img.shields.io/discord/1088813247060262956?color=3246a8&logo=discord&logoColor=white" alt="Discord Server" /></a>
+		<a href="https://github.com/sponsors/irisu01"><img src="https://img.shields.io/badge/support-support%20us!-important" /></a>
+  </p>
+	<p>
+    <a href="https:/github.com/iridiumbot/arcadia/blob/master/LICENSE.md"><img src="https://img.shields.io/github/license/iridiumbot/arcadia" /></a>
+		<a href="https://github.com/iridiumbot/arcadia/issues"><img src="https://img.shields.io/github/issues/iridiumbot/iridium" /></a>
+		<a href="https://github.com/iridiumbot/arcadia/actions"><img src="https://img.shields.io/github/actions/workflow/status/iridiumbot/arcadia/tsc.yml" /></a>
+		<img src="https://img.shields.io/tokei/lines/github/iridiumbot/arcadia" />
+	</p>
+  
+  <p align="center">
+    <a href="#overview">Overview</a>
+    •
+    <a href="https://discord.gg/muDnFVwhUq">Server</a>
+  </p>
+</div>
+
 ## Overview
 Arcadia is a wrapper framework built atop [Express.js](https://expressjs.com/) to mimick the routing and handling of the [Laravel](https://laravel.com/) framework made for [Node.js](https://nodejs.org). It is built to be a simple and easy to use framework that allows you to quickly build a web application with minimal setup, and a lot of flexibility in comparison to merely using Express.js.
 
