@@ -39,13 +39,13 @@ export class Route {
         })
     }
 
-    preprocess(callback: ContextFunction) {
+    preprocess(callback: ProcessorFunction) {
         this.preprocessors.push(callback);
 
         return this;
     }
 
-    postprocess(callback: ContextFunction) {
+    postprocess(callback: ProcessorFunction) {
         this.postprocessors.push(callback);
 
         return this;
