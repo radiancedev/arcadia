@@ -5,10 +5,10 @@
 		<a href="https://github.com/sponsors/irisu01"><img src="https://img.shields.io/badge/support-support%20us!-important" /></a>
   </p>
 	<p>
-    <a href="https:/github.com/iridiumbot/arcadia/blob/master/LICENSE.md"><img src="https://img.shields.io/github/license/iridiumbot/arcadia" /></a>
-		<a href="https://github.com/iridiumbot/arcadia/issues"><img src="https://img.shields.io/github/issues/iridiumbot/iridium" /></a>
-		<a href="https://github.com/iridiumbot/arcadia/actions"><img src="https://img.shields.io/github/actions/workflow/status/iridiumbot/arcadia/tsc.yml" /></a>
-		<img src="https://img.shields.io/tokei/lines/github/iridiumbot/arcadia" />
+    <a href="https:/github.com/bismuthmoe/arcadia/blob/master/LICENSE.md"><img src="https://img.shields.io/github/license/bismuthmoe/arcadia" /></a>
+		<a href="https://github.com/bismuthmoe/arcadia/issues"><img src="https://img.shields.io/github/issues/bismuthmoe/iridium" /></a>
+		<a href="https://github.com/bismuthmoe/arcadia/actions"><img src="https://img.shields.io/github/actions/workflow/status/bismuthmoe/arcadia/tsc.yml" /></a>
+		<img src="https://img.shields.io/tokei/lines/github/bismuthmoe/arcadia" />
 	</p>
   
   <p align="center">
@@ -35,6 +35,6 @@ All development should be resolved and curated over our [issue tracker](https://
 
 ## License
 
-**iridiumbot/arcadia** is licensed under the AGPL-3.0 license. Please see the license file for more information. Simply put, you are free to use this software for any purpose, but you must disclose any changes you make to the source code and release them under the same license. This however does not include branding or other assets that are not part of the source code; such as Iridium's icons, logos, etc.
+**bismuthmoe/arcadia** is licensed under the AGPL-3.0 license. Please see the license file for more information. Simply put, you are free to use this software for any purpose, but you must disclose any changes you make to the source code and release them under the same license. This however does not include branding or other assets that are not part of the source code; such as Iridium's icons, logos, etc.
 
 [tl;dr](https://tldrlegal.com/license/gnu-affero-general-public-license-v3-(agpl-3.0))
