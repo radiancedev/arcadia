@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+// @ts-ignore
 import e, { Request, Response as ExpressResponse } from 'express';
 import { MediaType, ParamsDictionary, Application, Response, NextFunction } from 'express-serve-static-core';
 import { IncomingHttpHeaders } from 'http';
@@ -21,6 +20,17 @@ export class Context implements e.Request {
 
     public get response() {
         return this._response;
+    }
+
+    public has(key: keyof Context, values: string[]): boolean {
+        // If the key doesn't exist, return false.
+        if (this[key] === undefined) return false;
+
+        // If the key exists and there are no values, return true.
+        if (values.length === 0) return true;
+
+        // If the key exists and there are values, check if the values exist.
+        return this[key] !== undefined && values.every((value) => this[key][value] !== undefined);
     }
 
     public async render(view: string, data?: object) {
