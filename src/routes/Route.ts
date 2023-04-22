@@ -167,6 +167,20 @@ export class Route {
 
         if (method === RequestMethod.GET) {
             this.router.get(path, async(req, res) => await callback(req, res));
+        } else if (method === RequestMethod.POST) {
+            this.router.post(path, async(req, res) => await callback(req, res));
+        } else if (method === RequestMethod.PUT) {
+            this.router.put(path, async(req, res) => await callback(req, res));
+        } else if (method === RequestMethod.DELETE) {
+            this.router.delete(path, async(req, res) => await callback(req, res));
+        } else if (method === RequestMethod.PATCH) {
+            this.router.patch(path, async(req, res) => await callback(req, res));
+        } else if (method === RequestMethod.OPTIONS) {
+            this.router.options(path, async(req, res) => await callback(req, res));
+        } else if (method === RequestMethod.HEAD) {
+            this.router.head(path, async(req, res) => await callback(req, res));
+        } else if (method === RequestMethod.ALL) {
+            this.router.all(path, async(req, res) => await callback(req, res));
         }
     }
 
