@@ -65,7 +65,58 @@ export class Route {
         return this;
     }
 
-    route(path: string, method: RequestMethod, value: string | ContextFunction) {
+    get(path: string, value: string | ContextFunction) {
+        return this._handle(path, RequestMethod.GET, value);
+    }
+
+    post(path: string, value: string | ContextFunction) {
+        return this._handle(path, RequestMethod.POST, value);
+    }
+
+    put(path: string, value: string | ContextFunction) {
+        return this._handle(path, RequestMethod.PUT, value);
+    }
+
+    delete(path: string, value: string | ContextFunction) {
+        return this._handle(path, RequestMethod.DELETE, value);
+    }
+
+    patch(path: string, value: string | ContextFunction) {
+        return this._handle(path, RequestMethod.PATCH, value);
+    }
+
+    options(path: string, value: string | ContextFunction) {
+        return this._handle(path, RequestMethod.OPTIONS, value);
+    }
+
+    head(path: string, value: string | ContextFunction) {
+        return this._handle(path, RequestMethod.HEAD, value);
+    }
+
+    all(path: string, value: string | ContextFunction) {
+        return this._handle(path, RequestMethod.ALL, value);
+    }
+
+    any(path: string, value: string | ContextFunction) {
+        return this._handle(path, RequestMethod.ALL, value);
+    }
+
+    ws(path: string, callback: WebsocketRequestHandler) {
+        this.websockets.set(path, callback);
+
+        return this;
+    }
+    
+    build() {
+        for (const [path, route] of this.paths) { 
+            this.router.use(path, route.build());
+        }
+
+        return this.router;
+    }
+
+    
+    private _handle(path: string, method: RequestMethod, value: string | ContextFunction) {
         const routeFunc = this.router[method];
 
         if (typeof value === "string") {
@@ -93,7 +144,7 @@ export class Route {
                         }
                     })
                 })
-                
+    
             } catch {}
         } else if (typeof value === "function") {
             routeFunc(path, async(req, res) => {
@@ -103,56 +154,6 @@ export class Route {
         }
 
         return this;
-    }
-
-    get(path: string, value: string | ContextFunction) {
-        return this.route(path, RequestMethod.GET, value);
-    }
-
-    post(path: string, value: string | ContextFunction) {
-        return this.route(path, RequestMethod.POST, value);
-    }
-
-    put(path: string, value: string | ContextFunction) {
-        return this.route(path, RequestMethod.PUT, value);
-    }
-
-    delete(path: string, value: string | ContextFunction) {
-        return this.route(path, RequestMethod.DELETE, value);
-    }
-
-    patch(path: string, value: string | ContextFunction) {
-        return this.route(path, RequestMethod.PATCH, value);
-    }
-
-    options(path: string, value: string | ContextFunction) {
-        return this.route(path, RequestMethod.OPTIONS, value);
-    }
-
-    head(path: string, value: string | ContextFunction) {
-        return this.route(path, RequestMethod.HEAD, value);
-    }
-
-    all(path: string, value: string | ContextFunction) {
-        return this.route(path, RequestMethod.ALL, value);
-    }
-
-    any(path: string, value: string | ContextFunction) {
-        return this.route(path, RequestMethod.ALL, value);
-    }
-
-    ws(path: string, callback: WebsocketRequestHandler) {
-        this.websockets.set(path, callback);
-
-        return this;
-    }
-    
-    build() {
-        for (const [path, route] of this.paths) { 
-            this.router.use(path, route.build());
-        }
-
-        return this.router;
     }
 
     private async _handleRequest(ctx: Context, ctxFunction: ContextFunction) {
