@@ -1,6 +1,5 @@
 import express from "express";
 import expressWs from "express-ws";
-import type { Express } from "express";
 import { Route } from "./routes/Route";
 import { ApplicationContext } from "./structures/ApplicationContext";
 import multer from "multer";
@@ -29,6 +28,7 @@ export class Application {
         this.app = app as unknown as expressWs.Application;
 
         this.options = options ?? {};
+
 
         Application.SELF = this;
     }
