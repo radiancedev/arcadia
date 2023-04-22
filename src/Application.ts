@@ -1,4 +1,5 @@
 import express from "express";
+import expressWs from "express-ws";
 import type { Express } from "express";
 import { Route } from "./routes/Route";
 import { ApplicationContext } from "./structures/ApplicationContext";
@@ -11,12 +12,15 @@ export interface ApplicationOptions {
  * An advanced webserver build over ExpressJS.
  */
 export class Application {
-    private app: Express;
+    private app: expressWs.Application;
     public static SELF: Application;
     public options: ApplicationOptions;
 
     constructor(options?: ApplicationOptions) {
-        this.app = express();
+        const app = express();
+        expressWs(app);
+
+        this.app = app as unknown as expressWs.Application;
 
         this.options = options ?? {};
 
@@ -37,6 +41,10 @@ export class Application {
 
     public register(routes: Route) {
         const router = routes.build();
+
+        for (let [path, callback] of routes.websockets) {
+            this.app.ws(path, callback);
+        }
 
         this.app.use(routes.path, router);
     }

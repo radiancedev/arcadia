@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { WebsocketRequestHandler } from "express-ws";
 import { glob } from "glob";
 import { Controller } from "../structures/Controller";
 import { Context } from "../structures/types/Context";
@@ -6,13 +7,25 @@ import { Context } from "../structures/types/Context";
 type ContextFunction = (ctx: Context) => Promise<any>;
 type ProcessorFunction = (ctx: Context, data?: any) => Promise<any>;
 
+enum RequestMethod {
+    GET = "get",
+    POST = "post",
+    PUT = "put",
+    DELETE = "delete",
+    PATCH = "patch",
+    OPTIONS = "options",
+    HEAD = "head",
+    ALL = "all",
+}
+
 export class Route {
     private paths: Map<string, Route>;
     private router: Router;
     public path: string;
     public controllers: Map<string, Controller>;
     public preprocessors: ProcessorFunction[];
-    public postprocessors: ProcessorFunction[];   
+    public postprocessors: ProcessorFunction[];
+    public websockets: Map<string, WebsocketRequestHandler>;
     
     constructor(path?: string) {
         this.paths = new Map();
@@ -21,6 +34,7 @@ export class Route {
         this.controllers = new Map();
         this.preprocessors = [];
         this.postprocessors = [];
+        this.websockets = new Map();
     }
 
     group(path: string, callback: (route: Route) => void) {
@@ -51,7 +65,9 @@ export class Route {
         return this;
     }
 
-    get(path: string, value: string | ContextFunction) {
+    route(path: string, method: RequestMethod, value: string | ContextFunction) {
+        const routeFunc = this.router[method];
+
         if (typeof value === "string") {
             // Try to import the controller.
             let data = value.split("@");
@@ -69,7 +85,7 @@ export class Route {
                                 this.controllers.set(name, new modules[name]());
                             }
 
-                            this.router.get(path, async(req, res) => {
+                            routeFunc(path, async(req, res) => {
                                 const ctx = new Context(req, res);
                                 // @ts-ignore
                                 await this._handleRequest(ctx, this.controllers.get(name)[method]);
@@ -80,11 +96,53 @@ export class Route {
                 
             } catch {}
         } else if (typeof value === "function") {
-            this.router.get(path, async(req, res) => {
+            routeFunc(path, async(req, res) => {
                 const ctx = new Context(req, res);
                 await this._handleRequest(ctx, value);
             })
         }
+
+        return this;
+    }
+
+    get(path: string, value: string | ContextFunction) {
+        return this.route(path, RequestMethod.GET, value);
+    }
+
+    post(path: string, value: string | ContextFunction) {
+        return this.route(path, RequestMethod.POST, value);
+    }
+
+    put(path: string, value: string | ContextFunction) {
+        return this.route(path, RequestMethod.PUT, value);
+    }
+
+    delete(path: string, value: string | ContextFunction) {
+        return this.route(path, RequestMethod.DELETE, value);
+    }
+
+    patch(path: string, value: string | ContextFunction) {
+        return this.route(path, RequestMethod.PATCH, value);
+    }
+
+    options(path: string, value: string | ContextFunction) {
+        return this.route(path, RequestMethod.OPTIONS, value);
+    }
+
+    head(path: string, value: string | ContextFunction) {
+        return this.route(path, RequestMethod.HEAD, value);
+    }
+
+    all(path: string, value: string | ContextFunction) {
+        return this.route(path, RequestMethod.ALL, value);
+    }
+
+    any(path: string, value: string | ContextFunction) {
+        return this.route(path, RequestMethod.ALL, value);
+    }
+
+    ws(path: string, callback: WebsocketRequestHandler) {
+        this.websockets.set(path, callback);
 
         return this;
     }
