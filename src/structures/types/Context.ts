@@ -1,21 +1,16 @@
 import { Request, Response } from 'express';
 import { Application } from '../../Application';
 
-export class Context {
-    private _request: Request;
+export class Context extends Request{
     private _response: Response;
 
     constructor(request: Request, response: Response) {
-        this._request = request;
+        super(new URL(""), undefined); // Hacky way to get the Request object to work.
+
         this._response = response;
-    }
 
-    public get app() {
-        return Application.SELF;
-    }
-
-    public get request() {
-        return this._request;
+        // Copy all properties from the request to this object.
+        Object.assign(this, request);
     }
 
     public get response() {
@@ -23,7 +18,7 @@ export class Context {
     }
 
     public async render(view: string, data?: object) {
-        return await this.app.context.views.render(view, data);
+        return await Application.SELF.context.views.render(view, data);
     }
 
     public async view(view: string, data?: object) {
