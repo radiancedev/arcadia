@@ -1,12 +1,12 @@
-import { Request, Response } from 'express';
+import e, { Request, Response } from 'express';
 import { Application } from '../../Application';
 
-export class Context extends Request{
+// Ignore the error, it's a hacky way to get the Request object to work.
+// @ts-ignore
+export class Context implements e.Request {
     private _response: Response;
 
     constructor(request: Request, response: Response) {
-        super("", undefined); // Hacky way to get the Request object to work.
-
         this._response = response;
 
         // Copy all properties from the request to this object.
@@ -23,8 +23,8 @@ export class Context extends Request{
 
     public async view(view: string, data?: object) {
         // Render the view.
-        const html = await this.render(view, data); 
-        
+        const html = await this.render(view, data);
+
         this.response.send(html);
     }
 }
