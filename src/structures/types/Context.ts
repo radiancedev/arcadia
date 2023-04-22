@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-nocheck
 import e, { Request, Response as ExpressResponse } from 'express';
 import { MediaType, ParamsDictionary, Application, Response, NextFunction } from 'express-serve-static-core';
 import { IncomingHttpHeaders } from 'http';
