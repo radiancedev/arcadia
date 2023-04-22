@@ -33,6 +33,17 @@ export class Context implements e.Request {
         return this[key] !== undefined && values.every((value) => this[key][value] !== undefined);
     }
 
+    public missing(key: keyof Context, values: string[]): string[] {
+        // get all missing keys
+        const missing = [];
+
+        for (const value of values) {
+            if (this[key][value] === undefined) missing.push(value);
+        }
+        
+        return missing;
+    }
+
     public async render(view: string, data?: object) {
         return await ArcadiaApplication.SELF.context.views.render(view, data);
     }
