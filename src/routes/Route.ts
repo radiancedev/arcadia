@@ -1,6 +1,8 @@
 import { Router } from "express";
+import { ParamsDictionary, Request as CoreRequest, Response as CoreResponse } from "express-serve-static-core";
 import { WebsocketRequestHandler } from "express-ws";
 import { glob } from "glob";
+import { ParsedQs } from "qs";
 import { Controller } from "../structures/Controller";
 import { Context } from "../structures/types/Context";
 
@@ -117,13 +119,10 @@ export class Route {
 
     
     private _handle(path: string, method: RequestMethod, value: string | ContextFunction) {
-        const routeFunc = this.router[method];
-
         if (typeof value === "string") {
             // Try to import the controller.
             let data = value.split("@");
             let name = data[0];
-            let method = value.includes("@") ? data[1] : "index";
 
             try {
                 glob(`**/${name}.ts`, {
@@ -136,24 +135,39 @@ export class Route {
                                 this.controllers.set(name, new modules[name]());
                             }
 
-                            routeFunc(path, async(req, res) => {
-                                const ctx = new Context(req, res);
-                                // @ts-ignore
-                                await this._handleRequest(ctx, this.controllers.get(name)[method]);
-                            })
+                            this._handleRouteFunc(path, method, value);
                         }
                     })
                 })
     
             } catch {}
         } else if (typeof value === "function") {
-            routeFunc(path, async(req, res) => {
-                const ctx = new Context(req, res);
-                await this._handleRequest(ctx, value);
-            })
+            this._handleRouteFunc(path, method, value);
         }
 
         return this;
+    }
+
+    private async _handleRouteFunc(path: string, method: RequestMethod, value: string | ContextFunction) {
+        // implement all methods
+        const callback = async(req: CoreRequest, res: CoreResponse) => {
+            const ctx = new Context(req, res);
+
+            if (typeof value === "string") {
+                let data = value.split("@");
+                let name = data[0];
+                let func = value.includes("@") ? data[1] : "index";
+                
+                // @ts-ignore
+                await this._handleRequest(ctx, this.controllers.get(name)[func]);
+            } else {
+                await this._handleRequest(ctx, value);
+            }
+        }
+
+        if (method === RequestMethod.GET) {
+            this.router.get(path, async(req, res) => await callback(req, res));
+        }
     }
 
     private async _handleRequest(ctx: Context, ctxFunction: ContextFunction) {
