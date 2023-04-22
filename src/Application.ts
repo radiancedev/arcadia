@@ -23,6 +23,10 @@ export class Application {
         Application.SELF = this;
     }
 
+    get express() {
+        return this.app;
+    }
+
     get context() {
         if (ApplicationContext.SELF != null) {
             return ApplicationContext.SELF;
