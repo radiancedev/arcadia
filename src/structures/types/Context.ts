@@ -5,7 +5,7 @@ export class Context extends Request{
     private _response: Response;
 
     constructor(request: Request, response: Response) {
-        super(new URL(""), undefined); // Hacky way to get the Request object to work.
+        super("", undefined); // Hacky way to get the Request object to work.
 
         this._response = response;
 
