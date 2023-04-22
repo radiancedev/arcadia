@@ -3,6 +3,7 @@ import expressWs from "express-ws";
 import type { Express } from "express";
 import { Route } from "./routes/Route";
 import { ApplicationContext } from "./structures/ApplicationContext";
+import multer from "multer";
 
 export interface ApplicationOptions {
     viewFolder?: string;
@@ -19,6 +20,11 @@ export class Application {
     constructor(options?: ApplicationOptions) {
         const app = express();
         expressWs(app);
+
+        // body-parser
+        app.use(express.json());
+        app.use(express.urlencoded({ extended: true }));
+        app.use(multer().any());
 
         this.app = app as unknown as expressWs.Application;
 
