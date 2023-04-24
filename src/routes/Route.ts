@@ -8,6 +8,7 @@ import { Context } from "../structures/types/Context";
 
 type ContextFunction = (ctx: Context, ...args: any) => Promise<any>;
 type ProcessorFunction = (ctx: Context, data?: any) => Promise<any>;
+type StringOrContextFunction = string | ContextFunction;
 
 enum RequestMethod {
     GET = "get",
@@ -67,39 +68,39 @@ export class Route {
         return this;
     }
 
-    get(path: string, ...values: string[] | ContextFunction[]) {
+    get(path: string, ...values: StringOrContextFunction[]) {
         return this._handle(path, RequestMethod.GET, ...values);
     }
 
-    post(path: string, ...values: string[] | ContextFunction[]) {
+    post(path: string, ...values: StringOrContextFunction[]) {
         return this._handle(path, RequestMethod.POST, ...values);
     }
 
-    put(path: string, ...values: string[] | ContextFunction[]) {
+    put(path: string, ...values: StringOrContextFunction[]) {
         return this._handle(path, RequestMethod.PUT, ...values);
     }
 
-    delete(path: string, ...values: string[] | ContextFunction[]) {
+    delete(path: string, ...values: StringOrContextFunction[]) {
         return this._handle(path, RequestMethod.DELETE, ...values);
     }
 
-    patch(path: string, ...values: string[] | ContextFunction[]) {
+    patch(path: string, ...values: StringOrContextFunction[]) {
         return this._handle(path, RequestMethod.PATCH, ...values);
     }
 
-    options(path: string, ...values: string[] | ContextFunction[]) {
+    options(path: string, ...values: StringOrContextFunction[]) {
         return this._handle(path, RequestMethod.OPTIONS, ...values);
     }
 
-    head(path: string, ...values: string[] | ContextFunction[]) {
+    head(path: string, ...values: StringOrContextFunction[]) {
         return this._handle(path, RequestMethod.HEAD, ...values);
     }
 
-    all(path: string, ...values: string[] | ContextFunction[]) {
+    all(path: string, ...values: StringOrContextFunction[]) {
         return this._handle(path, RequestMethod.ALL, ...values);
     }
 
-    any(path: string, ...values: string[] | ContextFunction[]) {
+    any(path: string, ...values: StringOrContextFunction[]) {
         return this._handle(path, RequestMethod.ALL, ...values);
     }
 
@@ -118,7 +119,7 @@ export class Route {
     }
 
 
-    private _handle(path: string, method: RequestMethod, ...values: string[] | ContextFunction[]) {
+    private _handle(path: string, method: RequestMethod, ...values: StringOrContextFunction[]) {
         for (let value of values) {
             if (typeof value === "string") {
                 // Try to import the controller.
@@ -150,7 +151,7 @@ export class Route {
         return this;
     }
 
-    private async _handleRouteFunc(path: string, method: RequestMethod, value: string | ContextFunction) {
+    private async _handleRouteFunc(path: string, method: RequestMethod, value: StringOrContextFunction) {
         // implement all methods
         const callback = async (req: CoreRequest, res: CoreResponse) => {
             const ctx = new Context(req, res);
