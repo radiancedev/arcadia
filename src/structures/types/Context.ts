@@ -20,11 +20,11 @@ export class Context implements e.Request {
         Object.assign(this, request);
     }
 
-    public get response() {
+    get response() {
         return this._response;
     }
 
-    public get prisma() {
+    get prisma() {
         try {
             if (this._prisma === undefined)
                 this._prisma = new PrismaClient();
@@ -35,7 +35,7 @@ export class Context implements e.Request {
         }
     }
 
-    public has(key: keyof Context, values: string[]): boolean {
+    has(key: keyof Context, values: string[]): boolean {
         // If the key doesn't exist, return false.
         if (this[key] === undefined) return false;
 
@@ -46,7 +46,7 @@ export class Context implements e.Request {
         return this[key] !== undefined && values.every((value) => this[key][value] !== undefined);
     }
 
-    public missing(key: keyof Context, values: string[]): string[] {
+    missing(key: keyof Context, values: string[]): string[] {
         // get all missing keys
         const missing = [];
 
@@ -57,15 +57,21 @@ export class Context implements e.Request {
         return missing;
     }
 
-    public async render(view: string, data?: object) {
+    async render(view: string, data?: object) {
         return await ArcadiaApplication.SELF.context.views.render(view, data);
     }
 
-    public async view(view: string, data?: object) {
+    async view(view: string, data?: object) {
         // Render the view.
         const html = await this.render(view, data);
 
         this.response.send(html);
+    }
+
+    status(code: number) {
+        this.response.status(code);
+
+        return this;
     }
 
     // e.Request properties

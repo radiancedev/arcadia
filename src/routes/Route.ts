@@ -159,7 +159,7 @@ export class Route {
                 let func = value.includes("@") ? data[1] : "index";
                 
                 // @ts-ignore
-                await this._handleRequest(ctx, this.controllers.get(name)[func]);
+                await this._handleRequest(ctx, this.controllers.get(name)[func], this.controllers.get(name));
             } else {
                 await this._handleRequest(ctx, value);
             }
@@ -184,14 +184,14 @@ export class Route {
         }
     }
 
-    private async _handleRequest(ctx: Context, ctxFunction: ContextFunction) {
+    private async _handleRequest(ctx: Context, ctxFunction: ContextFunction, self?: Controller) {
         // Run preprocessors.
         for (const preprocessor of this.preprocessors) {
             if (ctx.response.headersSent) {
                 break;
             }
             
-            preprocessor(ctx, null);
+            await preprocessor(ctx, null);
         }
         
         if (ctx.response.headersSent) {
@@ -200,7 +200,12 @@ export class Route {
         
         // kekw
         // @ts-ignore
-        let response = await ctxFunction(ctx);
+        let response;
+        if (self) {
+            response = await ctxFunction.call(self, ctx);
+        } else {
+            response = await ctxFunction(ctx);
+        }
 
         // Run postprocessors.
         for (const postprocessor of this.postprocessors) {
