@@ -28,7 +28,7 @@ export class Route {
     public preprocessors: ProcessorFunction[];
     public postprocessors: ProcessorFunction[];
     public websockets: Map<string, WebsocketRequestHandler>;
-    
+
     constructor(path?: string) {
         this.paths = new Map();
         this.path = path ?? "/";
@@ -67,40 +67,40 @@ export class Route {
         return this;
     }
 
-    get(path: string, value: string | ContextFunction) {
-        return this._handle(path, RequestMethod.GET, value);
+    get(path: string, ...values: string[] | ContextFunction[]) {
+        return this._handle(path, RequestMethod.GET, ...values);
     }
 
-    post(path: string, value: string | ContextFunction) {
-        return this._handle(path, RequestMethod.POST, value);
+    post(path: string, ...values: string[] | ContextFunction[]) {
+        return this._handle(path, RequestMethod.POST, ...values);
     }
 
-    put(path: string, value: string | ContextFunction) {
-        return this._handle(path, RequestMethod.PUT, value);
+    put(path: string, ...values: string[] | ContextFunction[]) {
+        return this._handle(path, RequestMethod.PUT, ...values);
     }
 
-    delete(path: string, value: string | ContextFunction) {
-        return this._handle(path, RequestMethod.DELETE, value);
+    delete(path: string, ...values: string[] | ContextFunction[]) {
+        return this._handle(path, RequestMethod.DELETE, ...values);
     }
 
-    patch(path: string, value: string | ContextFunction) {
-        return this._handle(path, RequestMethod.PATCH, value);
+    patch(path: string, ...values: string[] | ContextFunction[]) {
+        return this._handle(path, RequestMethod.PATCH, ...values);
     }
 
-    options(path: string, value: string | ContextFunction) {
-        return this._handle(path, RequestMethod.OPTIONS, value);
+    options(path: string, ...values: string[] | ContextFunction[]) {
+        return this._handle(path, RequestMethod.OPTIONS, ...values);
     }
 
-    head(path: string, value: string | ContextFunction) {
-        return this._handle(path, RequestMethod.HEAD, value);
+    head(path: string, ...values: string[] | ContextFunction[]) {
+        return this._handle(path, RequestMethod.HEAD, ...values);
     }
 
-    all(path: string, value: string | ContextFunction) {
-        return this._handle(path, RequestMethod.ALL, value);
+    all(path: string, ...values: string[] | ContextFunction[]) {
+        return this._handle(path, RequestMethod.ALL, ...values);
     }
 
-    any(path: string, value: string | ContextFunction) {
-        return this._handle(path, RequestMethod.ALL, value);
+    any(path: string, ...values: string[] | ContextFunction[]) {
+        return this._handle(path, RequestMethod.ALL, ...values);
     }
 
     ws(path: string, callback: WebsocketRequestHandler) {
@@ -108,41 +108,43 @@ export class Route {
 
         return this;
     }
-    
+
     build() {
-        for (const [path, route] of this.paths) { 
+        for (const [path, route] of this.paths) {
             this.router.use(path, route.build());
         }
 
         return this.router;
     }
 
-    
-    private _handle(path: string, method: RequestMethod, value: string | ContextFunction) {
-        if (typeof value === "string") {
-            // Try to import the controller.
-            let data = value.split("@");
-            let name = data[0];
 
-            try {
-                glob(`**/${name}.ts`, {
-                    absolute: true,
-                    ignore: ["node_modules/**/*", "dist/**/*"],
-                }).then(files => {
-                    import(files[0]).then((modules) => {
-                        if (modules[name]) {
-                            if (!this.controllers.has(name)) {
-                                this.controllers.set(name, new modules[name]());
+    private _handle(path: string, method: RequestMethod, ...values: string[] | ContextFunction[]) {
+        for (let value of values) {
+            if (typeof value === "string") {
+                // Try to import the controller.
+                let data = value.split("@");
+                let name = data[0];
+
+                try {
+                    glob(`**/${name}.ts`, {
+                        absolute: true,
+                        ignore: ["node_modules/**/*", "dist/**/*"],
+                    }).then(files => {
+                        import(files[0]).then((modules) => {
+                            if (modules[name]) {
+                                if (!this.controllers.has(name)) {
+                                    this.controllers.set(name, new modules[name]());
+                                }
+
+                                this._handleRouteFunc(path, method, value);
                             }
-
-                            this._handleRouteFunc(path, method, value);
-                        }
+                        })
                     })
-                })
-    
-            } catch {}
-        } else if (typeof value === "function") {
-            this._handleRouteFunc(path, method, value);
+
+                } catch { }
+            } else if (typeof value === "function") {
+                this._handleRouteFunc(path, method, value);
+            }
         }
 
         return this;
@@ -150,7 +152,7 @@ export class Route {
 
     private async _handleRouteFunc(path: string, method: RequestMethod, value: string | ContextFunction) {
         // implement all methods
-        const callback = async(req: CoreRequest, res: CoreResponse) => {
+        const callback = async (req: CoreRequest, res: CoreResponse) => {
             const ctx = new Context(req, res);
 
             // parse parameters
@@ -163,7 +165,7 @@ export class Route {
                 let data = value.split("@");
                 let name = data[0];
                 let func = value.includes("@") ? data[1] : "index";
-                
+
                 // @ts-ignore
                 await this._handleRequest(ctx, this.controllers.get(name)[func], this.controllers.get(name));
             } else {
@@ -172,21 +174,21 @@ export class Route {
         }
 
         if (method === RequestMethod.GET) {
-            this.router.get(path, async(req, res) => await callback(req, res));
+            this.router.get(path, async (req, res) => await callback(req, res));
         } else if (method === RequestMethod.POST) {
-            this.router.post(path, async(req, res) => await callback(req, res));
+            this.router.post(path, async (req, res) => await callback(req, res));
         } else if (method === RequestMethod.PUT) {
-            this.router.put(path, async(req, res) => await callback(req, res));
+            this.router.put(path, async (req, res) => await callback(req, res));
         } else if (method === RequestMethod.DELETE) {
-            this.router.delete(path, async(req, res) => await callback(req, res));
+            this.router.delete(path, async (req, res) => await callback(req, res));
         } else if (method === RequestMethod.PATCH) {
-            this.router.patch(path, async(req, res) => await callback(req, res));
+            this.router.patch(path, async (req, res) => await callback(req, res));
         } else if (method === RequestMethod.OPTIONS) {
-            this.router.options(path, async(req, res) => await callback(req, res));
+            this.router.options(path, async (req, res) => await callback(req, res));
         } else if (method === RequestMethod.HEAD) {
-            this.router.head(path, async(req, res) => await callback(req, res));
+            this.router.head(path, async (req, res) => await callback(req, res));
         } else if (method === RequestMethod.ALL) {
-            this.router.all(path, async(req, res) => await callback(req, res));
+            this.router.all(path, async (req, res) => await callback(req, res));
         }
     }
 
@@ -196,14 +198,14 @@ export class Route {
             if (ctx.response.headersSent) {
                 break;
             }
-            
+
             await preprocessor(ctx, null);
         }
-        
+
         if (ctx.response.headersSent) {
             return;
         }
-        
+
         // kekw
         // @ts-ignore
         let response;
@@ -218,7 +220,7 @@ export class Route {
             if (ctx.response.headersSent) {
                 break;
             }
-            
+
             response = await postprocessor(ctx, response);
         }
 
