@@ -6,7 +6,7 @@ import { ParsedQs } from "qs";
 import { Controller } from "../structures/Controller";
 import { Context } from "../structures/types/Context";
 
-type ContextFunction = (ctx: Context) => Promise<any>;
+type ContextFunction = (ctx: Context, ...args: any) => Promise<any>;
 type ProcessorFunction = (ctx: Context, data?: any) => Promise<any>;
 
 enum RequestMethod {
@@ -153,6 +153,12 @@ export class Route {
         const callback = async(req: CoreRequest, res: CoreResponse) => {
             const ctx = new Context(req, res);
 
+            // parse parameters
+            const params = [];
+            for (const [key, value] of Object.entries(req.params)) {
+                ctx.parsedParams.push(value);
+            }
+
             if (typeof value === "string") {
                 let data = value.split("@");
                 let name = data[0];
@@ -202,9 +208,9 @@ export class Route {
         // @ts-ignore
         let response;
         if (self) {
-            response = await ctxFunction.call(self, ctx);
+            response = await ctxFunction.call(self, ctx, ...ctx.parsedParams);
         } else {
-            response = await ctxFunction(ctx);
+            response = await ctxFunction(ctx, ...ctx.parsedParams);
         }
 
         // Run postprocessors.

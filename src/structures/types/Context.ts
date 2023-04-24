@@ -1,5 +1,4 @@
 // @ts-nocheck
-import { PrismaClient } from '@prisma/client';
 import e, { Request, Response as ExpressResponse } from 'express';
 import { MediaType, ParamsDictionary, Application, Response, NextFunction } from 'express-serve-static-core';
 import { IncomingHttpHeaders } from 'http';
@@ -7,17 +6,26 @@ import { Socket } from 'net';
 import { ParsedQs } from 'qs';
 import { Options, Ranges, Result } from 'range-parser';
 import { Application as ArcadiaApplication } from '../../Application';
+import { PrismaExtendedClient } from '../../orm/PrismaExtendedClient';
 
 // Ignore the error, it's a horrible way to get the Request object to work.
-export class Context implements e.Request {
+export class Context implements Request {
+    private _original: Request;
     private _response: Response;
-    private _prisma: PrismaClient?;
+    private _prisma: PrismaExtendedClient?;
+    public parsedParams: string[];
 
     constructor(request: Request, response: ExpressResponse) {
+        this._original = request;
         this._response = response;
+        this.parsedParams = [];
 
         // Copy all properties from the request to this object.
         Object.assign(this, request);
+    }
+
+    get original() {
+        return this._original;
     }
 
     get response() {
@@ -27,7 +35,7 @@ export class Context implements e.Request {
     get prisma() {
         try {
             if (this._prisma === undefined)
-                this._prisma = new PrismaClient();
+                this._prisma = new PrismaExtendedClient();
 
             return this._prisma;
         } catch {
