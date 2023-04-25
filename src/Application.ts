@@ -1,7 +1,7 @@
 import http from "http";
 import express from "express";
 import expressWs from "express-ws";
-import { Route } from "./routes/Route";
+import { ContextFunction, Route } from "./routes/Route";
 import { ApplicationContext } from "./structures/ApplicationContext";
 import multer from "multer";
 import { EventEmitter } from "events";
@@ -18,6 +18,7 @@ export class Application extends EventEmitter {
     private app: expressWs.Application;
     public static SELF: Application;
     public options: ApplicationOptions;
+    public statusHandlers: Map<number, ContextFunction>;
 
     constructor(options?: ApplicationOptions) {
         super();
@@ -33,7 +34,7 @@ export class Application extends EventEmitter {
         this.app = app as unknown as expressWs.Application;
 
         this.options = options ?? {};
-
+        this.statusHandlers = new Map();
 
         Application.SELF = this;
     }
@@ -67,10 +68,30 @@ export class Application extends EventEmitter {
     listen(path: string, callback?: () => void): http.Server
     listen(port: number, hostname: string, callback?: () => void): http.Server
     listen(...args: any[]): http.Server {
+        // register default handlers
+        this.app.use(async (req, res, next) => {
+            if (res.headersSent) {
+                return;
+            }
+            
+            let ctx = new Context(req, res);
+
+            // send a 404 if the route doesn't exist.
+            let handler = Application.SELF.statusHandlers.get(404);
+            let response = handler ? await handler(ctx) : "Not Found";
+
+            ctx.status(404).response.json(response);
+        });
+
+
         return this.app.listen(...args)
     }
 
     throwError(ctx: Context, error: Error) {
         this.emit("error", ctx, error);
+    }
+
+    handle(status: number, ctxFunction: ContextFunction) {
+        this.statusHandlers.set(status, ctxFunction);
     }
 }

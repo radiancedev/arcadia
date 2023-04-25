@@ -6,12 +6,14 @@ export class Context {
     public request: ExpressRequest;
     public response: ExpressResponse;
     private _prisma?: PrismaExtendedClient;
+    private _values: Map<string, any>;
     public parsedParams: string[];
 
     constructor(request: ExpressRequest, response: ExpressResponse) {
         this.request = request;
         this.response = response;
         this.parsedParams = [];
+        this._values = new Map();
     }
 
     get prisma() {
@@ -25,7 +27,19 @@ export class Context {
         }
     }
 
-    has(key: keyof Context, values: string[]): boolean {
+    has(key: string) {
+        return this._values.has(key);
+    }
+
+    get(key: string) {
+        return this._values.get(key);
+    }
+
+    set(key: string, value: any) {
+        this._values.set(key, value);
+    }
+
+    contains(key: keyof Context, values: string[]): boolean {
         // If the key doesn't exist, return false.
         if (this[key] === undefined) return false;
 
@@ -60,6 +74,24 @@ export class Context {
 
     status(code: number) {
         this.response.status(code);
+
+        return this;
+    }
+
+    send(data: any) {
+        this.response.send(data);
+
+        return this;
+    }
+
+    json(data: any) {
+        this.response.json(data);
+
+        return this;
+    }
+
+    redirect(url: string) {
+        this.response.redirect(url);
 
         return this;
     }

@@ -17,8 +17,17 @@ route.group("/hi", (route) => {
             "response"
         ]);
     });
+
     route.view("/test2", "comedy");
-})
+});
+
+app.handle(404, async(ctx) => {
+    return {
+        status: 404,
+        message: "Not found!"
+    
+    }
+});
 
 app.register(route);
 app.listen(4000);
