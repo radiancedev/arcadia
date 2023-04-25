@@ -8,7 +8,10 @@ import { Controller } from "../structures/Controller";
 import { Context } from "../structures/types/Context";
 import { EventEmitter } from "events";
 
-export type ContextFunction = (ctx: Context, ...args: any) => Promise<any>;
+export type ContextFunction = ((ctx: Context, ...args: any) => Promise<any>) & {
+    fromController?: boolean;
+    controller?: Controller;
+};
 export type ProcessorFunction = (ctx: Context, data?: any) => Promise<any>;
 export type StringOrContextFunction = string | ContextFunction;
 
@@ -142,8 +145,11 @@ export class Route extends EventEmitter {
                         if (!this.controllers.has(name)) {
                             this.controllers.set(name, new modules[name]());
                         }
-
-                        routes.push(this.controllers.get(name)?.[method] as ContextFunction);
+                        const func = this.controllers.get(name)?.[method] as ContextFunction;
+                        func.controller = this.controllers.get(name);
+                        func.fromController = true;
+                        
+                        routes.push(func);
                     }
 
                 } catch { }
@@ -167,7 +173,7 @@ export class Route extends EventEmitter {
             const ctx = new Context(req, res);
 
             // parse parameters
-            const params = [];
+            const params: string[] = [];
             for (const [key, value] of Object.entries(req.params)) {
                 ctx.parsedParams.push(value);
             }
@@ -210,7 +216,7 @@ export class Route extends EventEmitter {
         }
     }
 
-    private async _handleRequest(ctx: Context, ctxFunction: ContextFunction, self?: Controller) {
+    private async _handleRequest(ctx: Context, ctxFunction: ContextFunction) {
         // Run preprocessors.
         for (const preprocessor of this.preprocessors) {
             if (ctx.response.headersSent) {
@@ -227,12 +233,11 @@ export class Route extends EventEmitter {
         // kekw
         // @ts-ignore
         let response;
-        if (self) {
-            response = await ctxFunction.call(self, ctx, ...ctx.parsedParams);
+        if (ctxFunction.fromController == true) {
+            await ctxFunction.call(ctxFunction.controller, ctx, ...ctx.parsedParams);
         } else {
-            response = await ctxFunction(ctx, ...ctx.parsedParams);
+            await this._handleRequest(ctx, ctxFunction);
         }
-
         // Run postprocessors.
         for (const postprocessor of this.postprocessors) {
             if (ctx.response.headersSent) {
