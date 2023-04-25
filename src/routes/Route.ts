@@ -148,7 +148,7 @@ export class Route extends EventEmitter {
                         const func = this.controllers.get(name)?.[method] as ContextFunction;
                         func.controller = this.controllers.get(name);
                         func.fromController = true;
-                        
+
                         routes.push(func);
                     }
 
@@ -234,9 +234,9 @@ export class Route extends EventEmitter {
         // @ts-ignore
         let response;
         if (ctxFunction.fromController == true) {
-            await ctxFunction.call(ctxFunction.controller, ctx, ...ctx.parsedParams);
+            response = await ctxFunction.call(ctxFunction.controller, ctx, ...ctx.parsedParams);
         } else {
-            await this._handleRequest(ctx, ctxFunction);
+            response = await ctxFunction(ctx, ...ctx.parsedParams);
         }
         // Run postprocessors.
         for (const postprocessor of this.postprocessors) {
