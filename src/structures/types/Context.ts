@@ -62,7 +62,7 @@ export class Context {
     }
 
     async render(view: string, data?: object) {
-        return await ArcadiaApplication.SELF.context.views.render(view, data);
+        return await ArcadiaApplication.SELF.render(view, data);
     }
 
     async view(view: string, data?: object) {

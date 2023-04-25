@@ -25,7 +25,6 @@ app.handle(404, async(ctx) => {
     return {
         status: 404,
         message: "Not found!"
-    
     }
 });
 

@@ -9,6 +9,7 @@ import { Context } from "./structures/types/Context";
 
 export interface ApplicationOptions {
     viewFolder?: string;
+    render?: (view: string, data?: object) => Promise<string>;
 }
 
 /**
@@ -59,6 +60,10 @@ export class Application extends EventEmitter {
         }
 
         this.app.use(routes.path, router);
+    }
+
+    public render(view: string, state: any) {
+        return this.context.render(view, state);
     }
     
     listen(port: number, hostname: string, backlog: number, callback?: () => void): http.Server
