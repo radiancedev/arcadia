@@ -165,12 +165,15 @@ export class Route extends EventEmitter {
 
     private async _handleRouteFunctions(path: string, method: RequestMethod, values: ContextFunction[]) {
         // implement all methods
+        let ctx: Context;
         const callback = async (req: ExpressRequest, res: ExpressResponse, next: NextFunction, ctxFunction: ContextFunction) => {
             if (res.headersSent === true) {
                 return;
             }
 
-            const ctx = new Context(req, res);
+            if (!ctx) {
+                ctx = new Context(req, res);
+            }
 
             // parse parameters
             const params: string[] = [];
