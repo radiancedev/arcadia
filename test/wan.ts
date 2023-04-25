@@ -12,10 +12,13 @@ route.group("/hi", (route) => {
     });
 
     route.get("/test", async(ctx: Context) => {
-        
-    }, "TestController@test");
+        return ctx.prisma?.omit(ctx, [
+            "request",
+            "response"
+        ]);
+    });
     route.view("/test2", "comedy");
 })
 
 app.register(route);
-app.listen(3000);
+app.listen(4000);

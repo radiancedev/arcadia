@@ -1,8 +1,11 @@
+import http from "http";
 import express from "express";
 import expressWs from "express-ws";
 import { Route } from "./routes/Route";
 import { ApplicationContext } from "./structures/ApplicationContext";
 import multer from "multer";
+import { EventEmitter } from "events";
+import { Context } from "./structures/types/Context";
 
 export interface ApplicationOptions {
     viewFolder?: string;
@@ -11,12 +14,14 @@ export interface ApplicationOptions {
 /**
  * An advanced webserver build over ExpressJS.
  */
-export class Application {
+export class Application extends EventEmitter {
     private app: expressWs.Application;
     public static SELF: Application;
     public options: ApplicationOptions;
 
     constructor(options?: ApplicationOptions) {
+        super();
+
         const app = express();
         expressWs(app);
 
@@ -54,8 +59,18 @@ export class Application {
 
         this.app.use(routes.path, router);
     }
+    
+    listen(port: number, hostname: string, backlog: number, callback?: () => void): http.Server
+    listen(port: number, callback?: () => void): http.Server
+    listen(callback?: () => void): http.Server
+    listen(handle: any, listeningListener?: () => void): http.Server
+    listen(path: string, callback?: () => void): http.Server
+    listen(port: number, hostname: string, callback?: () => void): http.Server
+    listen(...args: any[]): http.Server {
+        return this.app.listen(...args)
+    }
 
-    public listen(port: number) {
-        this.app.listen(port);
+    throwError(ctx: Context, error: Error) {
+        this.emit("error", ctx, error);
     }
 }

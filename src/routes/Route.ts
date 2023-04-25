@@ -1,10 +1,12 @@
 import { NextFunction, Router } from "express";
-import { ParamsDictionary, Request as CoreRequest, Response as CoreResponse } from "express-serve-static-core";
+import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
 import { WebsocketRequestHandler } from "express-ws";
 import { glob } from "glob";
 import { ParsedQs } from "qs";
+import { Application } from "../Application";
 import { Controller } from "../structures/Controller";
 import { Context } from "../structures/types/Context";
+import { EventEmitter } from "events";
 
 export type ContextFunction = (ctx: Context, ...args: any) => Promise<any>;
 export type ProcessorFunction = (ctx: Context, data?: any) => Promise<any>;
@@ -21,7 +23,7 @@ export enum RequestMethod {
     ALL = "all",
 }
 
-export class Route {
+export class Route extends EventEmitter {
     private paths: Map<string, Route>;
     private router: Router;
     public path: string;
@@ -31,6 +33,8 @@ export class Route {
     public websockets: Map<string, WebsocketRequestHandler>;
 
     constructor(path?: string) {
+        super();
+
         this.paths = new Map();
         this.path = path ?? "/";
         this.router = Router();
@@ -127,7 +131,7 @@ export class Route {
                 let data = value.split("@");
                 let name = data[0];
                 let method = data[1];
-    
+
                 try {
                     glob(`**/${name}.ts`, {
                         absolute: true,
@@ -138,12 +142,12 @@ export class Route {
                                 if (!this.controllers.has(name)) {
                                     this.controllers.set(name, new modules[name]());
                                 }
-    
+
                                 routes.push(this.controllers.get(name)?.[method] as ContextFunction);
                             }
                         })
                     })
-    
+
                 } catch { }
             } else if (typeof value === "function") {
                 routes.push(value);
@@ -157,7 +161,11 @@ export class Route {
 
     private async _handleRouteFunctions(path: string, method: RequestMethod, values: ContextFunction[]) {
         // implement all methods
-        const callback = async (req: CoreRequest, res: CoreResponse, next: NextFunction, ctxFunction: ContextFunction) => {
+        const callback = async (req: ExpressRequest, res: ExpressResponse, next: NextFunction, ctxFunction: ContextFunction) => {
+            if (res.headersSent === true) {
+                return;
+            }
+
             const ctx = new Context(req, res);
 
             // parse parameters
@@ -166,10 +174,24 @@ export class Route {
                 ctx.parsedParams.push(value);
             }
 
-            await this._handleRequest(ctx, ctxFunction);
+            try {
+                await this._handleRequest(ctx, ctxFunction);
+            } catch (error: any) {
+                // send to the route error handler
+                this.emit("error", ctx, error);
+
+                if (res.headersSent === false) {
+                    // send error to application error handler
+                    Application.SELF.throwError(ctx, error);
+                }
+            }
+
+            if (res.headersSent === false) {
+                next();
+            }
         }
 
-        const routeFunctions = values.map(value => async (req: CoreRequest, res: CoreResponse, next: NextFunction) => await callback(req, res, next, value));
+        const routeFunctions = values.map(value => async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => await callback(req, res, next, value));
 
         if (method === RequestMethod.GET) {
             this.router.get(path, ...routeFunctions);
