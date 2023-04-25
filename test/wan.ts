@@ -12,10 +12,7 @@ route.group("/hi", (route) => {
     });
 
     route.get("/test", async(ctx: Context) => {
-        return ctx.prisma?.omit(ctx, [
-            "request",
-            "response"
-        ]);
+        return "uwu";
     });
 
     route.view("/test2", "comedy");

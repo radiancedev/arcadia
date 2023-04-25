@@ -165,9 +165,10 @@ export class Route extends EventEmitter {
 
     private async _handleRouteFunctions(path: string, method: RequestMethod, values: ContextFunction[]) {
         // implement all methods
-        let ctx: Context;
+        let ctx: Context | undefined;
         const callback = async (req: ExpressRequest, res: ExpressResponse, next: NextFunction, ctxFunction: ContextFunction) => {
             if (res.headersSent === true) {
+                console.log(res.headersSent);
                 return;
             }
 
@@ -195,6 +196,8 @@ export class Route extends EventEmitter {
 
             if (res.headersSent === false) {
                 next();
+            } else {
+                ctx = undefined;
             }
         }
 
@@ -257,5 +260,6 @@ export class Route extends EventEmitter {
                 ctx.response.send(response);
             }
         }
+
     }
 }

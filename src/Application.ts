@@ -76,6 +76,7 @@ export class Application extends EventEmitter {
         // register default handlers
         this.app.use(async (req, res, next) => {
             if (res.headersSent) {
+                next();
                 return;
             }
             
@@ -86,6 +87,8 @@ export class Application extends EventEmitter {
             let response = handler ? await handler(ctx) : "Not Found";
 
             ctx.status(404).response.json(response);
+
+            next();
         });
 
 
