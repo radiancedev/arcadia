@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { NextFunction, Router } from "express";
 import { ParamsDictionary, Request as CoreRequest, Response as CoreResponse } from "express-serve-static-core";
 import { WebsocketRequestHandler } from "express-ws";
 import { glob } from "glob";
@@ -6,11 +6,11 @@ import { ParsedQs } from "qs";
 import { Controller } from "../structures/Controller";
 import { Context } from "../structures/types/Context";
 
-type ContextFunction = (ctx: Context, ...args: any) => Promise<any>;
-type ProcessorFunction = (ctx: Context, data?: any) => Promise<any>;
-type StringOrContextFunction = string | ContextFunction;
+export type ContextFunction = (ctx: Context, ...args: any) => Promise<any>;
+export type ProcessorFunction = (ctx: Context, data?: any) => Promise<any>;
+export type StringOrContextFunction = string | ContextFunction;
 
-enum RequestMethod {
+export enum RequestMethod {
     GET = "get",
     POST = "post",
     PUT = "put",
@@ -120,12 +120,14 @@ export class Route {
 
 
     private _handle(path: string, method: RequestMethod, ...values: StringOrContextFunction[]) {
+        const routes: ContextFunction[] = [];
         for (let value of values) {
             if (typeof value === "string") {
                 // Try to import the controller.
                 let data = value.split("@");
                 let name = data[0];
-
+                let method = data[1];
+    
                 try {
                     glob(`**/${name}.ts`, {
                         absolute: true,
@@ -136,24 +138,26 @@ export class Route {
                                 if (!this.controllers.has(name)) {
                                     this.controllers.set(name, new modules[name]());
                                 }
-
-                                this._handleRouteFunc(path, method, value);
+    
+                                routes.push(this.controllers.get(name)?.[method] as ContextFunction);
                             }
                         })
                     })
-
+    
                 } catch { }
             } else if (typeof value === "function") {
-                this._handleRouteFunc(path, method, value);
+                routes.push(value);
             }
         }
+
+        this._handleRouteFunctions(path, method, routes);
 
         return this;
     }
 
-    private async _handleRouteFunc(path: string, method: RequestMethod, value: StringOrContextFunction) {
+    private async _handleRouteFunctions(path: string, method: RequestMethod, values: ContextFunction[]) {
         // implement all methods
-        const callback = async (req: CoreRequest, res: CoreResponse) => {
+        const callback = async (req: CoreRequest, res: CoreResponse, next: NextFunction, ctxFunction: ContextFunction) => {
             const ctx = new Context(req, res);
 
             // parse parameters
@@ -162,34 +166,27 @@ export class Route {
                 ctx.parsedParams.push(value);
             }
 
-            if (typeof value === "string") {
-                let data = value.split("@");
-                let name = data[0];
-                let func = value.includes("@") ? data[1] : "index";
-
-                // @ts-ignore
-                await this._handleRequest(ctx, this.controllers.get(name)[func], this.controllers.get(name));
-            } else {
-                await this._handleRequest(ctx, value);
-            }
+            await this._handleRequest(ctx, ctxFunction);
         }
 
+        const routeFunctions = values.map(value => async (req: CoreRequest, res: CoreResponse, next: NextFunction) => await callback(req, res, next, value));
+
         if (method === RequestMethod.GET) {
-            this.router.get(path, async (req, res) => await callback(req, res));
+            this.router.get(path, ...routeFunctions);
         } else if (method === RequestMethod.POST) {
-            this.router.post(path, async (req, res) => await callback(req, res));
+            this.router.post(path, ...routeFunctions);
         } else if (method === RequestMethod.PUT) {
-            this.router.put(path, async (req, res) => await callback(req, res));
+            this.router.put(path, ...routeFunctions);
         } else if (method === RequestMethod.DELETE) {
-            this.router.delete(path, async (req, res) => await callback(req, res));
+            this.router.delete(path, ...routeFunctions);
         } else if (method === RequestMethod.PATCH) {
-            this.router.patch(path, async (req, res) => await callback(req, res));
+            this.router.patch(path, ...routeFunctions);
         } else if (method === RequestMethod.OPTIONS) {
-            this.router.options(path, async (req, res) => await callback(req, res));
+            this.router.options(path, ...routeFunctions);
         } else if (method === RequestMethod.HEAD) {
-            this.router.head(path, async (req, res) => await callback(req, res));
+            this.router.head(path, ...routeFunctions);
         } else if (method === RequestMethod.ALL) {
-            this.router.all(path, async (req, res) => await callback(req, res));
+            this.router.all(path, ...routeFunctions);
         }
     }
 
