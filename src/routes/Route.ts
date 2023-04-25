@@ -123,7 +123,7 @@ export class Route extends EventEmitter {
     }
 
 
-    private _handle(path: string, method: RequestMethod, ...values: StringOrContextFunction[]) {
+    private async _handle(path: string, method: RequestMethod, ...values: StringOrContextFunction[]) {
         const routes: ContextFunction[] = [];
         for (let value of values) {
             if (typeof value === "string") {
@@ -133,20 +133,18 @@ export class Route extends EventEmitter {
                 let method = data[1];
 
                 try {
-                    glob(`**/${name}.ts`, {
-                        absolute: true,
-                        ignore: ["node_modules/**/*", "dist/**/*"],
-                    }).then(files => {
-                        import(files[0]).then((modules) => {
-                            if (modules[name]) {
-                                if (!this.controllers.has(name)) {
-                                    this.controllers.set(name, new modules[name]());
-                                }
-
-                                routes.push(this.controllers.get(name)?.[method] as ContextFunction);
-                            }
+                    const files = await glob(`**/${name}.ts`, {
+                            absolute: true,
+                            ignore: ["node_modules/**/*", "dist/**/*"],
                         })
-                    })
+                    const modules = await import(files[0]);
+                    if (modules[name]) {
+                        if (!this.controllers.has(name)) {
+                            this.controllers.set(name, new modules[name]());
+                        }
+
+                        routes.push(this.controllers.get(name)?.[method] as ContextFunction);
+                    }
 
                 } catch { }
             } else if (typeof value === "function") {
@@ -154,7 +152,7 @@ export class Route extends EventEmitter {
             }
         }
 
-        this._handleRouteFunctions(path, method, routes);
+        await this._handleRouteFunctions(path, method, routes);
 
         return this;
     }
