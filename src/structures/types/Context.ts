@@ -96,15 +96,15 @@ export class Context {
         return this;
     }
 
-    header(key: string, value?: string) {
-        if (!value) {
-            return this.request.get(key);
-        } else {
-            this.response.set(key, value);
-
-            return this;
-        }
+    header(key: string) {
+        return this.request.get(key);
     }
+
+    setHeader(key: string, value: string) {
+        this.response.setHeader(key, value);
+    }
+
+
 
     /* Express Request Methods & Properties */
     
