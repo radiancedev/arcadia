@@ -96,7 +96,18 @@ export class Context {
         return this;
     }
 
+    header(key: string, value?: string) {
+        if (!value) {
+            return this.request.get(key);
+        } else {
+            this.response.set(key, value);
+
+            return this;
+        }
+    }
+
     /* Express Request Methods & Properties */
+    
     get files() {
         return this.request.files;
     }
