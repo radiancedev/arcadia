@@ -3,5 +3,5 @@ import { ContextFunction } from "../routes/Route";
 export class Controller {
     public static SELF: Controller;
 
-    [key: string]: ContextFunction; // This is required.
+    [key: string]: ContextFunction | Function; // This is required.
 }
