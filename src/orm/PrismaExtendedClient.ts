@@ -1,4 +1,6 @@
-export class PrismaExtendedClientt {
+import { PrismaClient } from "@prisma/client";
+
+export class PrismaExtendedClient extends PrismaClient {
     public omit<T, K extends keyof T>(obj: T | undefined, keys: K[]): Omit<T, K> {
         if (!obj) {
             return {} as Omit<T, K>;
