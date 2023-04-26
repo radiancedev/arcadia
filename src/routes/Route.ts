@@ -165,16 +165,13 @@ export class Route extends EventEmitter {
 
     private async _handleRouteFunctions(path: string, method: RequestMethod, values: ContextFunction[]) {
         // implement all methods
-        let ctx: Context | undefined;
         const callback = async (req: ExpressRequest, res: ExpressResponse, next: NextFunction, ctxFunction: ContextFunction) => {
             if (res.headersSent === true) {
-                console.log(res.headersSent);
                 return;
             }
 
-            if (!ctx) {
-                ctx = new Context(req, res);
-            }
+            const ctx: Context = res.locals.ctx ?? new Context(req, res);
+            res.locals.ctx = ctx;
 
             // parse parameters
             const params: string[] = [];
@@ -195,9 +192,9 @@ export class Route extends EventEmitter {
             }
 
             if (res.headersSent === false) {
+
                 next();
             } else {
-                ctx = undefined;
             }
         }
 
