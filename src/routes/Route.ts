@@ -1,4 +1,4 @@
-import { NextFunction, Router } from "express";
+import express, { NextFunction, Router } from "express";
 import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
 import { WebsocketRequestHandler } from "express-ws";
 import { glob } from "glob";
@@ -117,6 +117,10 @@ export class Route extends EventEmitter {
         return this;
     }
 
+    static(path: string, folder: string) {
+        this.router.use(path, express.static(folder));
+    }
+
     build() {
         for (const [path, route] of this.paths) {
             this.router.use(path, route.build());
@@ -183,11 +187,12 @@ export class Route extends EventEmitter {
                 await this._handleRequest(ctx, ctxFunction);
             } catch (error: any) {
                 // send to the route error handler
-                this.emit("error", ctx, error);
+                if (this.listeners("error").length !== 0) {
+                    this.emit("error", ctx, error);
+                }
 
                 if (res.headersSent === false) {
-                    // send error to application error handler
-                    Application.SELF.throwError(ctx, error);
+                    Application.SELF.emit("error", ctx, error);
                 }
             }
 
