@@ -17,6 +17,7 @@ try {
 
     // Replace any with PrismaExtendedClient
     fileData = fileData.replace(/any/g, "PrismaExtendedClient");
+    fileData = fileData.replace("keyof PrismaExtendedClient", "keyof typeof PrismaExtendedClient");
 
     // Save the file
     fs.writeFileSync(path.join(__dirname, "../src/orm/ORM.ts"), fileData, "utf8");
