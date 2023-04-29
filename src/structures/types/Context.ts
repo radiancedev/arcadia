@@ -1,11 +1,11 @@
 import e, { Request as ExpressRequest, Response as ExpressResponse } from 'express';
 import { Application as ArcadiaApplication } from '../../Application';
-import { PrismaExtendedClient } from '../../orm/PrismaExtendedClient';
+import { ORM } from '../../orm/ORM';
 
 export class Context {
     public request: ExpressRequest;
     public response: ExpressResponse;
-    private _prisma?: PrismaExtendedClient;
+    private _orm: ORM;
     private _values: Map<string, any>;
     public parsedParams: string[];
 
@@ -14,17 +14,11 @@ export class Context {
         this.response = response;
         this.parsedParams = [];
         this._values = new Map();
+        this._orm = new ORM();
     }
 
-    get prisma() {
-        try {
-            if (this._prisma === undefined)
-                this._prisma = new PrismaExtendedClient();
-
-            return this._prisma;
-        } catch {
-            return null;
-        }
+    get orm() {
+        return this._orm;
     }
 
     has(key: string) {
