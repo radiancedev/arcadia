@@ -21,4 +21,5 @@ try {
     // Save the file
     fs.writeFileSync(path.join("__dirname", "../src/orm/ORM.ts"), fileData, "utf8");
 } catch (e) {
+    console.log(e)
 }
