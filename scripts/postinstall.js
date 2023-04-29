@@ -22,7 +22,16 @@ export class ORM extends PrismaClient {
 `;
 
 try {
-    const _ = require("@prisma/client"); 
+    // npm query for @prisma/client
+    // access node_modules from here
+    const prismaClientPath = path.join(__dirname, "../../.prisma/");
+    
+    if (!fs.existsSync(prismaClientPath)) {
+        // Prisma is not installed.
+        return;
+    }
+    
+    // If we get here, Prisma is installed.
     
     // Prisma is installed, so we'll use it as an ORM.
     // Replace the value in ORM.ts with the Prisma client.
