@@ -17,6 +17,6 @@
         "src/**/*.ts",
     ],
     "exclude": [
-        "src/orm/**/*.orm.ts"
+        "src/orm/**/ORM.prisma.ts"
     ]
 }
