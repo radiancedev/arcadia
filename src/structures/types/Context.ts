@@ -103,7 +103,8 @@ export class Context {
     /* Express Request Methods & Properties */
     
     get files() {
-        return this.request.files;
+        // since we use multer.any(), we need to cast the files to Express.Multer.File[]
+        return this.request.files as Express.Multer.File[];
     }
 
     get body() {
