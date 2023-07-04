@@ -56,8 +56,14 @@ export class Route extends EventEmitter {
     }
 
     view(path: string, view: string, data?: object) {
-        this.router.get(path, (req, res) => {
-            let ctx = new Context(req, res);
+        this.router.get(path, (req, res, next) => {
+            let ctx = new Context(req, res, () => {
+                if (res.headersSent) {
+                    return;
+                }
+
+                next();
+            });
 
             ctx.render(view, data);
         })
@@ -140,20 +146,26 @@ export class Route extends EventEmitter {
                 let method = data[1];
 
                 try {
-                    const files = await glob(`**/${name}.ts`, {
-                            absolute: true,
-                            ignore: ["node_modules/**/*", "dist/**/*"],
-                        })
-                    const modules = await import(files[0]);
-                    if (modules[name]) {
-                        if (!this.controllers.has(name)) {
-                            this.controllers.set(name, new modules[name]());
-                        }
+                    if (this.controllers.has(name)) {
                         const func = this.controllers.get(name)?.[method] as ContextFunction;
                         func.controller = this.controllers.get(name);
                         func.fromController = true;
 
                         routes.push(func);
+                    } else {
+                        const files = await glob(`**/${name}.ts`, {
+                                absolute: true,
+                                ignore: ["node_modules/**/*", "dist/**/*"],
+                            })
+                        const modules = await import(files[0]);
+                        if (modules[name]) {
+                            this.controllers.set(name, new modules[name]());
+                            const func = this.controllers.get(name)?.[method] as ContextFunction;
+                            func.controller = this.controllers.get(name);
+                            func.fromController = true;
+    
+                            routes.push(func);
+                        }
                     }
 
                 } catch { }
@@ -173,8 +185,16 @@ export class Route extends EventEmitter {
             if (res.headersSent === true) {
                 return;
             }
+            
+            const nextFunction = () => {
+                if (res.headersSent === true) {
+                    return;
+                }
 
-            const ctx: Context = res.locals.ctx ?? new Context(req, res);
+                next();
+            }
+
+            const ctx: Context = res.locals.ctx ?? new Context(req, res, nextFunction);
             res.locals.ctx = ctx;
 
             // parse parameters
@@ -197,7 +217,6 @@ export class Route extends EventEmitter {
             }
 
             if (res.headersSent === false) {
-
                 next();
             } else {
             }

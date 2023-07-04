@@ -11,9 +11,7 @@ route.group("/hi", (route) => {
         console.log("Hi :3");
     });
 
-    route.get("/test", async(ctx: Context) => {
-        return "uwu";
-    });
+    route.get("/test", "TestController@test", "TestController@test2");
 
     route.view("/test2", "comedy");
 });

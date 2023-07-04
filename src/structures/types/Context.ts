@@ -8,13 +8,20 @@ export class Context {
     private _orm: ORM;
     private _values: Map<string, any>;
     public parsedParams: string[];
+    private _next: () => void;
 
-    constructor(request: ExpressRequest, response: ExpressResponse) {
+    constructor(request: ExpressRequest, response: ExpressResponse, next: (() => void)) {
         this.request = request;
         this.response = response;
         this.parsedParams = [];
+        
         this._values = new Map();
         this._orm = new ORM();
+        this._next = next;
+    }
+
+    get next() {
+        return this._next;
     }
 
     get orm() {

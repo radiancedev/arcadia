@@ -80,7 +80,11 @@ export class Application extends EventEmitter {
                 return;
             }
             
-            let ctx = new Context(req, res);
+            let ctx = new Context(req, res, () => {
+                if (res.headersSent) return;
+                
+                next();
+            });
 
             // send a 404 if the route doesn't exist.
             let handler = Application.SELF.statusHandlers.get(404);
