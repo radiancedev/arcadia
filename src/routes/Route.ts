@@ -47,9 +47,9 @@ export class Route extends EventEmitter {
         this.websockets = new Map();
     }
 
-    group(path: string, callback: (route: Route) => void) {
+    async group(path: string, callback: (route: Route) => Promise<void>) {
         const route = new Route(path);
-        callback(route);
+        await callback(route);
         this.paths.set(path, route);
 
         return this;
@@ -81,40 +81,40 @@ export class Route extends EventEmitter {
         return this;
     }
 
-    get(path: string, ...values: StringOrContextFunction[]) {
-        return this._handle(path, RequestMethod.GET, ...values);
+    async get(path: string, ...values: StringOrContextFunction[]) {
+        return await this._handle(path, RequestMethod.GET, ...values);
     }
 
-    post(path: string, ...values: StringOrContextFunction[]) {
-        return this._handle(path, RequestMethod.POST, ...values);
+    async post(path: string, ...values: StringOrContextFunction[]) {
+        return await this._handle(path, RequestMethod.POST, ...values);
     }
 
-    put(path: string, ...values: StringOrContextFunction[]) {
-        return this._handle(path, RequestMethod.PUT, ...values);
+    async put(path: string, ...values: StringOrContextFunction[]) {
+        return await this._handle(path, RequestMethod.PUT, ...values);
     }
 
-    delete(path: string, ...values: StringOrContextFunction[]) {
-        return this._handle(path, RequestMethod.DELETE, ...values);
+    async delete(path: string, ...values: StringOrContextFunction[]) {
+        return await this._handle(path, RequestMethod.DELETE, ...values);
     }
 
-    patch(path: string, ...values: StringOrContextFunction[]) {
-        return this._handle(path, RequestMethod.PATCH, ...values);
+    async patch(path: string, ...values: StringOrContextFunction[]) {
+        return await this._handle(path, RequestMethod.PATCH, ...values);
     }
 
-    options(path: string, ...values: StringOrContextFunction[]) {
-        return this._handle(path, RequestMethod.OPTIONS, ...values);
+    async options(path: string, ...values: StringOrContextFunction[]) {
+        return await this._handle(path, RequestMethod.OPTIONS, ...values);
     }
 
-    head(path: string, ...values: StringOrContextFunction[]) {
-        return this._handle(path, RequestMethod.HEAD, ...values);
+    async head(path: string, ...values: StringOrContextFunction[]) {
+        return await this._handle(path, RequestMethod.HEAD, ...values);
     }
 
-    all(path: string, ...values: StringOrContextFunction[]) {
-        return this._handle(path, RequestMethod.ALL, ...values);
+    async all(path: string, ...values: StringOrContextFunction[]) {
+        return await this._handle(path, RequestMethod.ALL, ...values);
     }
 
-    any(path: string, ...values: StringOrContextFunction[]) {
-        return this._handle(path, RequestMethod.ALL, ...values);
+    async any(path: string, ...values: StringOrContextFunction[]) {
+        return await this._handle(path, RequestMethod.ALL, ...values);
     }
 
     ws(path: string, callback: WebsocketRequestHandler) {
